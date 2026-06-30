@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Practice Set — @the_solvers</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,900;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- START OVERLAY -->
+<div id="start-overlay" class="overlay-start">
+  <div class="eyebrow">@the_solvers · Practice Set</div>
+  <h2 id="ov-title">Loading…</h2>
+  <p id="ov-sub">15 minutes · up to 25 questions</p>
+  <div class="overlay-rules" id="ov-rules"></div>
+  <button class="start-test-btn" id="start-btn">▶ Start</button>
+  <a href="index.html" class="nav-link" style="color:#999;font-size:11px;margin-top:4px">&larr; Back to subjects</a>
+</div>
+
+<!-- RESUME OVERLAY -->
+<div id="resume-overlay" class="overlay-start" style="display:none">
+  <div class="eyebrow">@the_solvers</div>
+  <h2>Welcome back</h2>
+  <div class="overlay-resume">
+    <p id="resume-text">You already have an attempt saved for this set.</p>
+    <div class="resume-actions">
+      <button class="r-review" id="resume-review">Review Attempt</button>
+      <button class="r-new" id="resume-new">Start New</button>
+    </div>
+  </div>
+</div>
+
+<!-- TEST PAGE -->
+<div id="test-page" style="display:none">
+  <div class="test-header">
+    <div class="test-title-bar">
+      <span id="hdr-subject">Subject</span>
+      <span class="mode-pill" id="hdr-mode">TEST</span>
+    </div>
+    <div class="header-stats">
+      <div class="hstat"><div class="hstat-val" id="timer-val">15:00</div><div class="hstat-label">Time Left</div></div>
+      <div class="hstat"><div class="hstat-val" id="answered-val">0/0</div><div class="hstat-label">Answered</div></div>
+      <div id="google_translate_element"></div>
+    </div>
+  </div>
+
+  <div class="test-shell">
+    <div class="test-body">
+      <div class="q-card">
+        <div class="q-card-head">
+          <div class="q-num" id="q-num">Question 1</div>
+          <div class="q-exam" id="q-exam"></div>
+        </div>
+        <div class="q-body">
+          <div class="q-text" id="q-text"></div>
+          <div class="opt-list" id="opt-list"></div>
+          <div class="hint-box" id="hint-box"></div>
+          <div class="feedback-box" id="feedback-box">
+            <div class="feedback-head" id="feedback-head"></div>
+            <div class="feedback-text" id="feedback-text"></div>
+          </div>
+          <div class="q-actions">
+            <button class="act-btn" id="btn-prev">&larr; Previous</button>
+            <button class="act-btn" id="btn-clear">Clear Response</button>
+            <button class="act-btn hint" id="btn-hint">💡 Hint</button>
+            <button class="act-btn primary" id="btn-next">Next &rarr;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-panel">
+      <div class="side-title">Question Palette</div>
+      <div class="palette" id="palette"></div>
+      <div class="legend">
+        <span><i class="l-ans"></i> Answered</span>
+        <span><i class="l-skip"></i> Skipped</span>
+        <span><i class="l-cur"></i> Current</span>
+      </div>
+      <button class="submit-btn" id="btn-submit">Submit Test</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESULT PAGE -->
+<div id="result-page">
+  <div class="wrap" style="padding:0">
+    <div class="result-verdict" id="verdict-box">
+      <div class="verdict-icon" id="verdict-icon">🎯</div>
+      <div class="verdict-text" id="verdict-text">Result</div>
+      <div class="verdict-sub" id="verdict-sub"></div>
+    </div>
+
+    <div class="result-grid">
+      <div class="rstat"><div class="rstat-val" id="r-score">0</div><div class="rstat-label">Score</div></div>
+      <div class="rstat"><div class="rstat-val" id="r-correct">0</div><div class="rstat-label">Correct</div></div>
+      <div class="rstat"><div class="rstat-val" id="r-wrong">0</div><div class="rstat-label">Wrong</div></div>
+      <div class="rstat"><div class="rstat-val" id="r-acc">0%</div><div class="rstat-label">Accuracy</div></div>
+    </div>
+
+    <div class="result-section">
+      <div class="rs-head">Solutions &amp; Analysis</div>
+      <div class="rs-body">
+        <div class="filter-row" id="review-filters">
+          <button class="filter-chip active" data-f="all">All</button>
+          <button class="filter-chip" data-f="wrong">Wrong</button>
+          <button class="filter-chip" data-f="correct">Correct</button>
+          <button class="filter-chip" data-f="skip">Skipped</button>
+        </div>
+        <div id="review-list"></div>
+        <div class="review-nav" id="review-nav">
+          <button class="act-btn" id="review-prev">&larr; Previous</button>
+          <div class="review-counter" id="review-counter">1 / 1</div>
+          <button class="act-btn primary" id="review-next">Next &rarr;</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="result-actions">
+      <button class="back-btn" id="back-step-btn" style="background:var(--ink-soft)">&larr; Back</button>
+      <a class="back-btn" href="index.html">Back to Subjects</a>
+      <button class="back-btn" id="retry-btn" style="background:var(--accent)">Retry This Set</button>
+    </div>
+  </div>
+</div>
+
+<!-- Google Translate -->
+<script type="text/javascript">
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({pageLanguage: 'en', includedLanguages: 'hi', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
+}
+</script>
+<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" async></script>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+<script>
+const SET_SIZE = 25;
+const TIME_LIMIT = 15 * 60; // 15 minutes per set, fixed
+
+const params = new URLSearchParams(window.location.search);
+const subjectKey = params.get('subject');
+const setIdx = parseInt(params.get('set') || '0', 10);
+const mode = params.get('mode') === 'quiz' ? 'quiz' : 'test';
+
+const subject = SUBJECT_DATA[subjectKey];
+if (!subject) {
+  document.body.innerHTML = '<div style="padding:60px;text-align:center;font-family:sans-serif">Subject not found. <a href="index.html">Go back</a></div>';
+  throw new Error('no subject');
+}
+
+const allQ = subject.questions;
+const start = setIdx * SET_SIZE;
+const end = Math.min(start + SET_SIZE, allQ.length);
+const questions = allQ.slice(start, end);
+
+let answers = new Array(questions.length).fill(null);   // selected letter or null
+let locked = new Array(questions.length).fill(false);   // quiz-mode: locked after marking
+let hintUsed = new Array(questions.length).fill(false);
+let current = 0;
+let timeLeft = TIME_LIMIT;
+let timerId = null;
+let startedAt = null;
+let submitted = false;
+
+// ---------- header / overlay text ----------
+document.getElementById('hdr-subject').textContent = `${subject.name} · Set ${setIdx+1}`;
+document.getElementById('hdr-mode').textContent = mode.toUpperCase();
+document.getElementById('hdr-mode').classList.toggle('quiz', mode === 'quiz');
+document.getElementById('ov-title').textContent = `${subject.name} — Set ${setIdx + 1}`;
+document.getElementById('ov-sub').textContent = `${questions.length} Questions · 15 Minutes · ${mode === 'quiz' ? 'Quiz Mode' : 'Test Mode'}`;
+document.getElementById('ov-rules').innerHTML = mode === 'quiz'
+  ? `<p>✦ Mark an option to see instant feedback — correct, wrong, and a full explanation<br>
+     ✦ Stuck? Tap <b>Hint</b> to reveal the correct answer<br>
+     ✦ Once marked, that question is locked — move to the next<br>
+     ✦ Timer runs for 15 minutes total<br>
+     ✦ Your progress auto-saves as you go</p>`
+  : `<p>✦ Answer questions exactly like a real exam — no feedback until the end<br>
+     ✦ Use the palette to jump between questions freely<br>
+     ✦ Submit any time, or it auto-submits when the timer ends<br>
+     ✦ Full score, accuracy &amp; solution analysis after submission<br>
+     ✦ Your progress auto-saves as you go</p>`;
+
+// ---------- resume check ----------
+const existing = Store.get(subjectKey, setIdx);
+if (existing && existing.mode === mode && existing.status) {
+  document.getElementById('start-overlay').style.display = 'none';
+  document.getElementById('resume-overlay').style.display = 'flex';
+  document.getElementById('resume-text').textContent = existing.status === 'completed'
+    ? `You completed this set with a score of ${existing.score}/${existing.total} (${existing.accuracy}% accuracy). Review your previous attempt or start fresh.`
+    : `You have an attempt in progress (${existing.answeredCount || 0} of ${questions.length} answered). Resume reviewing it or start a new attempt.`;
+
+  document.getElementById('resume-review').onclick = () => {
+    if (existing.status === 'completed'){
+      renderResult(existing);
+    } else {
+      answers = existing.answers || answers;
+      locked = existing.locked || locked;
+      hintUsed = existing.hintUsed || hintUsed;
+      document.getElementById('resume-overlay').style.display = 'none';
+      beginTest(true);
+    }
+  };
+  document.getElementById('resume-new').onclick = () => {
+    Store.remove(subjectKey, setIdx);
+    document.getElementById('resume-overlay').style.display = 'none';
+    document.getElementById('start-overlay').style.display = 'flex';
+  };
+}
+
+document.getElementById('start-btn').onclick = () => beginTest(false);
+
+function beginTest(isResume){
+  document.getElementById('start-overlay').style.display = 'none';
+  document.getElementById('test-page').style.display = 'block';
+  startedAt = Date.now();
+  buildPalette();
+  renderQuestion(0);
+  startTimer();
+  autosave('in-progress');
+}
+
+// ---------- timer ----------
+function startTimer(){
+  updateTimerDisplay();
+  timerId = setInterval(() => {
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0){
+      clearInterval(timerId);
+      submitTest(true);
+    }
+  }, 1000);
+}
+function updateTimerDisplay(){
+  const m = Math.floor(timeLeft/60), s = timeLeft%60;
+  const el = document.getElementById('timer-val');
+  el.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  el.classList.toggle('warning', timeLeft <= 180 && timeLeft > 60);
+  el.classList.toggle('danger', timeLeft <= 60);
+}
+
+// ---------- palette ----------
+function buildPalette(){
+  const pal = document.getElementById('palette');
+  pal.innerHTML = '';
+  questions.forEach((q, i) => {
+    const b = document.createElement('button');
+    b.className = 'pal-btn';
+    b.textContent = i+1;
+    b.onclick = () => renderQuestion(i);
+    pal.appendChild(b);
+  });
+  refreshPalette();
+}
+function refreshPalette(){
+  const pal = document.getElementById('palette').children;
+  for (let i=0;i<pal.length;i++){
+    pal[i].className = 'pal-btn';
+    if (answers[i] !== null) pal[i].classList.add('answered');
+    if (i === current) pal[i].classList.add('current');
+  }
+  const answeredCount = answers.filter(a => a !== null).length;
+  document.getElementById('answered-val').textContent = `${answeredCount}/${questions.length}`;
+}
+
+// ---------- render a question ----------
+function renderQuestion(i){
+  current = i;
+  const q = questions[i];
+  document.getElementById('q-num').textContent = `Question ${i+1} of ${questions.length}`;
+  document.getElementById('q-exam').textContent = q.x || '';
+  document.getElementById('q-text').innerHTML = TextFmt.renderQuestion(q.q);
+
+  const optList = document.getElementById('opt-list');
+  optList.innerHTML = '';
+  const letters = Object.keys(q.o);
+  letters.forEach(letter => {
+    const row = document.createElement('div');
+    row.className = 'opt-row';
+    row.dataset.letter = letter;
+    row.innerHTML = `<div class="opt-letter">${letter}</div><div class="opt-text">${TextFmt.renderPlain(q.o[letter])}</div>`;
+    row.onclick = () => selectOption(i, letter);
+    optList.appendChild(row);
+  });
+
+  document.getElementById('hint-box').className = 'hint-box';
+  document.getElementById('hint-box').textContent = '';
+  document.getElementById('feedback-box').className = 'feedback-box';
+  document.getElementById('btn-hint').disabled = false;
+
+  applyOptionState(i);
+  refreshPalette();
+
+  document.getElementById('btn-prev').disabled = (i === 0);
+  document.getElementById('btn-next').textContent = (i === questions.length-1) ? 'Finish ✓' : 'Next →';
+}
+
+function applyOptionState(i){
+  const q = questions[i];
+  const rows = document.getElementById('opt-list').children;
+  const isLockedQuiz = mode === 'quiz' && locked[i];
+  const sel = answers[i];
+
+  [...rows].forEach(row => {
+    const letter = row.dataset.letter;
+    row.classList.remove('selected','correct','wrong','locked','dim');
+    if (mode === 'quiz' && isLockedQuiz){
+      row.classList.add('locked');
+      if (letter === q.a) row.classList.add('correct');
+      else if (letter === sel) row.classList.add('wrong');
+      else row.classList.add('dim');
+    } else {
+      if (letter === sel) row.classList.add('selected');
+    }
+  });
+
+  if (mode === 'quiz' && isLockedQuiz){
+    const box = document.getElementById('feedback-box');
+    const head = document.getElementById('feedback-head');
+    const text = document.getElementById('feedback-text');
+    const correct = sel === q.a;
+    box.className = 'feedback-box show' + (correct ? '' : ' bad');
+    head.className = 'feedback-head ' + (correct ? 'ok' : 'bad');
+    head.textContent = correct ? '✓ Correct Answer' : '✗ Incorrect — Correct Answer: ' + q.a;
+    text.innerHTML = TextFmt.renderPlain(q.e || 'No explanation available for this question.');
+    document.getElementById('btn-hint').disabled = true;
+  }
+
+  if (hintUsed[i] && !(mode==='quiz' && isLockedQuiz)){
+    showHintBox(i);
+  }
+}
+
+function selectOption(i, letter){
+  if (submitted) return;
+  if (mode === 'quiz' && locked[i]) return; // already locked, no change
+
+  answers[i] = letter;
+
+  if (mode === 'quiz'){
+    locked[i] = true;
+  }
+  applyOptionState(i);
+  refreshPalette();
+  autosave('in-progress');
+}
+
+function showHintBox(i){
+  const q = questions[i];
+  const box = document.getElementById('hint-box');
+  box.className = 'hint-box show';
+  box.innerHTML = `<b>Hint:</b> The correct option is <b>${q.a}</b> — ${TextFmt.renderPlain(q.o[q.a])}`;
+}
+
+document.getElementById('btn-hint').onclick = () => {
+  if (locked[current] && mode === 'quiz') return;
+  hintUsed[current] = true;
+  showHintBox(current);
+  autosave('in-progress');
+};
+
+document.getElementById('btn-clear').onclick = () => {
+  if (mode === 'quiz' && locked[current]) return;
+  answers[current] = null;
+  applyOptionState(current);
+  refreshPalette();
+  autosave('in-progress');
+};
+
+document.getElementById('btn-prev').onclick = () => { if (current > 0) renderQuestion(current-1); };
+document.getElementById('btn-next').onclick = () => {
+  if (current < questions.length - 1) renderQuestion(current+1);
+  else submitTest(false);
+};
+
+document.getElementById('btn-submit').onclick = () => {
+  if (confirm('Submit this set? You will not be able to change your answers afterwards.')){
+    submitTest(false);
+  }
+};
+
+// ---------- autosave ----------
+function autosave(status){
+  const answeredCount = answers.filter(a => a !== null).length;
+  Store.save(subjectKey, setIdx, {
+    mode, status,
+    answers, locked, hintUsed,
+    answeredCount, total: questions.length,
+    timeLeft, savedAt: Date.now()
+  });
+}
+
+// ---------- submit & scoring ----------
+function submitTest(auto){
+  if (submitted) return;
+  submitted = true;
+  clearInterval(timerId);
+
+  let correctCount = 0, wrongCount = 0, skipCount = 0;
+  const detail = questions.map((q, i) => {
+    const sel = answers[i];
+    let status = 'skip';
+    if (sel === null || sel === undefined) { skipCount++; status='skip'; }
+    else if (sel === q.a) { correctCount++; status='correct'; }
+    else { wrongCount++; status='wrong'; }
+    return { idx:i, q: q.q, opts:q.o, ans:q.a, sel, exp:q.e, exam:q.x, status };
+  });
+
+  const total = questions.length;
+  const score = correctCount; // 1 mark each, no negative — display only
+  const accAttempted = (correctCount + wrongCount) || 1;
+  const accuracy = Math.round((correctCount / accAttempted) * 100);
+
+  const result = {
+    mode, status:'completed',
+    subjectKey, subjectName: subject.name, setIdx,
+    answers, locked, hintUsed,
+    total, score, correct: correctCount, wrong: wrongCount, skipped: skipCount,
+    accuracy, detail,
+    completedAt: Date.now(),
+    auto
+  };
+  Store.save(subjectKey, setIdx, result);
+  renderResult(result);
+}
+
+let reviewDetail = [];
+let reviewFiltered = [];
+let reviewPos = 0;
+let reviewFilter = 'all';
+
+function renderResult(result){
+  document.getElementById('start-overlay').style.display = 'none';
+  document.getElementById('resume-overlay').style.display = 'none';
+  document.getElementById('test-page').style.display = 'none';
+  document.getElementById('result-page').style.display = 'block';
+
+  const pct = Math.round((result.score / result.total) * 100);
+  const pass = pct >= 50;
+  const vbox = document.getElementById('verdict-box');
+  vbox.className = 'result-verdict ' + (pass ? 'pass' : 'fail');
+  document.getElementById('verdict-icon').textContent = pass ? '🎯' : '📘';
+  document.getElementById('verdict-text').textContent = pass ? 'Well Played!' : 'Keep Practicing';
+  document.getElementById('verdict-sub').textContent =
+    `${subject.name} · Set ${result.setIdx+1} · ${result.mode === 'quiz' ? 'Quiz Mode' : 'Test Mode'} · You scored ${pct}% overall.`;
+
+  document.getElementById('r-score').textContent = `${result.score}/${result.total}`;
+  document.getElementById('r-correct').textContent = result.correct;
+  document.getElementById('r-wrong').textContent = result.wrong;
+  document.getElementById('r-acc').textContent = result.accuracy + '%';
+
+  reviewDetail = result.detail;
+  reviewFilter = 'all';
+  reviewPos = 0;
+  applyReviewFilter();
+
+  document.querySelectorAll('#review-filters .filter-chip').forEach(chip => {
+    chip.onclick = () => {
+      document.querySelectorAll('#review-filters .filter-chip').forEach(c=>c.classList.remove('active'));
+      chip.classList.add('active');
+      reviewFilter = chip.dataset.f;
+      reviewPos = 0;
+      applyReviewFilter();
+    };
+  });
+
+  document.getElementById('review-prev').onclick = () => {
+    if (reviewPos > 0){ reviewPos--; renderReviewItem(); }
+  };
+  document.getElementById('review-next').onclick = () => {
+    if (reviewPos < reviewFiltered.length - 1){ reviewPos++; renderReviewItem(); }
+  };
+
+  document.getElementById('retry-btn').onclick = () => {
+    Store.remove(subjectKey, setIdx);
+    window.location.reload();
+  };
+
+  document.getElementById('back-step-btn').onclick = () => {
+    if (window.history.length > 1) window.history.back();
+    else window.location.href = 'index.html';
+  };
+}
+
+function applyReviewFilter(){
+  reviewFiltered = reviewFilter === 'all' ? reviewDetail : reviewDetail.filter(d => d.status === reviewFilter);
+  renderReviewItem();
+}
+
+function renderReviewItem(){
+  const list = document.getElementById('review-list');
+  const nav = document.getElementById('review-nav');
+  const counter = document.getElementById('review-counter');
+  const prevBtn = document.getElementById('review-prev');
+  const nextBtn = document.getElementById('review-next');
+
+  if (!reviewFiltered.length){
+    list.innerHTML = '<p style="font-family:var(--sans);font-size:14px;color:var(--muted);padding:20px 0">Nothing to show in this filter.</p>';
+    nav.style.display = 'none';
+    return;
+  }
+  nav.style.display = 'flex';
+
+  const i = reviewDetail.indexOf(reviewFiltered[reviewPos]);
+  const d = reviewFiltered[reviewPos];
+
+  const tagClass = d.status === 'correct' ? 'ok' : d.status === 'wrong' ? 'bad' : 'skip';
+  const tagText = d.status === 'correct' ? 'Correct' : d.status === 'wrong' ? 'Wrong' : 'Skipped';
+  let optsHtml = '';
+  Object.keys(d.opts).forEach(letter => {
+    let cls = '';
+    if (letter === d.ans) cls = 'is-correct';
+    else if (letter === d.sel) cls = 'is-wrong';
+    optsHtml += `<div class="review-opt ${cls}"><b>${letter}</b><span>${TextFmt.renderPlain(d.opts[letter])}</span></div>`;
+  });
+
+  list.innerHTML = `
+    <div class="review-item">
+      <span class="review-tag ${tagClass}">Q${i+1} · ${tagText}</span>
+      <div class="review-q">${TextFmt.renderQuestion(d.q)}</div>
+      <div class="review-opts">${optsHtml}</div>
+      <div class="review-exp"><b>Explanation:</b> ${TextFmt.renderPlain(d.exp || 'Not available.')}</div>
+    </div>
+  `;
+
+  counter.textContent = `${reviewPos+1} / ${reviewFiltered.length}`;
+  prevBtn.disabled = (reviewPos === 0);
+  nextBtn.disabled = (reviewPos === reviewFiltered.length - 1);
+
+  document.getElementById('review-list').scrollIntoView({behavior:'instant', block:'nearest'});
+}
+
+window.addEventListener('beforeunload', (e) => {
+  if (!submitted && startedAt) autosave('in-progress');
+});
+</script>
+</body>
+</html>

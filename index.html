@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SSC Mock Test Series — @the_solvers</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,300;0,400;0,500;0,600;0,700;0,900;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a href="index.html" class="nav-brand">
+    <div class="nav-logo">@S</div>
+    <div><div class="nav-name">The Solvers</div><div class="nav-tag">SSC Mock Test Series</div></div>
+  </a>
+  <div class="nav-right">
+    <button class="nav-link" onclick="document.getElementById('subjects').scrollIntoView({behavior:'smooth'})">Subjects</button>
+    <button class="nav-link" id="reset-progress-link">Reset Progress</button>
+    <div id="google_translate_element"></div>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-chip">◆ SSC CGL · CHSL · MTS Practice Bank</div>
+  <h1 class="hero-h1">20 subjects. 8,200+ exam questions.<br><em>Test mode</em> or <em>Quiz mode</em> — your call.</h1>
+  <p class="hero-p">Practice in sets of up to 25 questions, 15 minutes each. Switch to Test mode for an exam-style sprint with full analysis at the end, or Quiz mode for instant right/wrong feedback and on-demand hints as you go.</p>
+  <div class="hero-stats">
+    <div class="hs"><div class="hs-n" id="stat-subjects">20</div><div class="hs-l">Subjects</div></div>
+    <div class="hs"><div class="hs-n" id="stat-questions">—</div><div class="hs-l">Questions</div></div>
+    <div class="hs"><div class="hs-n" id="stat-sets">—</div><div class="hs-l">Practice Sets</div></div>
+    <div class="hs"><div class="hs-n" id="stat-done">0</div><div class="hs-l">Sets Done</div></div>
+  </div>
+</div>
+
+<div class="lib" id="subjects">
+  <div class="lib-hd">
+    <div class="lib-hd-left"><h2>Choose a subject</h2><p>25 Q / SET · 15 MIN / SET</p></div>
+  </div>
+  <div class="search-bar">
+    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="search-box" placeholder="Search a subject — e.g. Polity, Physics, Sports…">
+  </div>
+  <div class="filter-row" id="tag-filters"></div>
+  <div class="vol-grid" id="subject-grid"></div>
+</div>
+
+<footer class="site-footer">
+  <p>@the_solvers · Practice data sourced from recent SSC shift papers · Built for serious aspirants</p>
+</footer>
+
+<!-- SET PICKER MODAL -->
+<div class="modal-backdrop" id="set-modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="modal-subject-name">Subject</h3>
+      <button class="close-x" id="modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="mode-toggle">
+        <div class="mode-card active" id="btn-mode-test" data-mode="test">
+          <div class="mc-icon">📝</div>
+          <div class="mc-name">Test Mode</div>
+          <div class="mc-desc">Full analysis after submit</div>
+        </div>
+        <div class="mode-card" id="btn-mode-quiz" data-mode="quiz">
+          <div class="mc-icon">⚡</div>
+          <div class="mc-name">Quiz Mode</div>
+          <div class="mc-desc">Instant feedback + hints</div>
+        </div>
+      </div>
+      <div class="mode-desc" id="mode-desc">
+        <b>TEST MODE</b> — answer all questions against the clock, then submit to see your full score, accuracy and solution-by-solution analysis.
+      </div>
+      <div class="sets-grid" id="sets-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Google Translate -->
+<script type="text/javascript">
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({pageLanguage: 'en', includedLanguages: 'hi', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
+}
+</script>
+<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" async></script>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+<script>
+const SET_SIZE = 25;
+let currentSubjectKey = null;
+let currentMode = 'test';
+
+function setsFor(subject){
+  const n = subject.questions.length;
+  const sets = [];
+  for (let i=0; i<n; i+=SET_SIZE){
+    sets.push({ start:i, end: Math.min(i+SET_SIZE, n) });
+  }
+  return sets;
+}
+
+function buildGrid(filterText, activeTag){
+  const grid = document.getElementById('subject-grid');
+  grid.innerHTML = '';
+  let totalQ = 0, totalSets = 0, totalDone = 0;
+
+  SUBJECT_ORDER.forEach(key => {
+    const subj = SUBJECT_DATA[key];
+    const sets = setsFor(subj);
+    totalQ += subj.questions.length;
+    totalSets += sets.length;
+    const stats = Store.subjectStats(key, sets.length);
+    totalDone += stats.completed;
+
+    if (filterText && !subj.name.toLowerCase().includes(filterText.toLowerCase())) return;
+    if (activeTag && activeTag !== 'All' && subj.tag !== activeTag) return;
+
+    const pct = sets.length ? Math.round((stats.completed/sets.length)*100) : 0;
+
+    const card = document.createElement('div');
+    card.className = 'vol-card';
+    card.innerHTML = `
+      <div class="stripe"></div>
+      <div class="vc-top">
+        <div class="vc-icon">${subj.icon}</div>
+        <div class="vc-tag">${subj.tag}</div>
+      </div>
+      <div class="vc-name">${subj.name}</div>
+      <div class="vc-meta"><span><b>${subj.questions.length}</b> Qs</span><span><b>${sets.length}</b> sets</span><span><b>${stats.completed}</b> done</span></div>
+      <div class="vc-progress-wrap"><div class="vc-progress" style="width:${pct}%"></div></div>
+      <div class="vc-cta">Open subject →</div>
+    `;
+    card.onclick = () => openSetModal(key);
+    grid.appendChild(card);
+  });
+
+  document.getElementById('stat-questions').textContent = totalQ.toLocaleString();
+  document.getElementById('stat-sets').textContent = totalSets.toLocaleString();
+  document.getElementById('stat-done').textContent = totalDone.toLocaleString();
+}
+
+function buildTagFilters(){
+  const tags = ['All', ...new Set(SUBJECT_ORDER.map(k => SUBJECT_DATA[k].tag))];
+  const row = document.getElementById('tag-filters');
+  row.innerHTML = '';
+  tags.forEach((tag, i) => {
+    const chip = document.createElement('button');
+    chip.className = 'filter-chip' + (i===0 ? ' active' : '');
+    chip.textContent = tag;
+    chip.onclick = () => {
+      [...row.children].forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      buildGrid(document.getElementById('search-box').value, tag);
+    };
+    row.appendChild(chip);
+  });
+}
+
+function openSetModal(key){
+  currentSubjectKey = key;
+  const subj = SUBJECT_DATA[key];
+  document.getElementById('modal-subject-name').textContent = subj.name;
+  setMode('test');
+  renderSets();
+  document.getElementById('set-modal').classList.add('show');
+}
+
+function setMode(mode){
+  currentMode = mode;
+  document.getElementById('btn-mode-test').classList.toggle('active', mode==='test');
+  document.getElementById('btn-mode-quiz').classList.toggle('active', mode==='quiz');
+  document.getElementById('mode-desc').innerHTML = mode === 'test'
+    ? '<b>TEST MODE</b> — answer all questions against the clock, then submit to see your full score, accuracy and solution-by-solution analysis.'
+    : '<b>QUIZ MODE</b> — get instant correct/wrong feedback with explanation right after you mark each answer, plus an on-demand Hint button for tricky ones.';
+  renderSets();
+}
+document.getElementById('btn-mode-test').onclick = () => setMode('test');
+document.getElementById('btn-mode-quiz').onclick = () => setMode('quiz');
+
+function renderSets(){
+  const subj = SUBJECT_DATA[currentSubjectKey];
+  const sets = setsFor(subj);
+  const grid = document.getElementById('sets-grid');
+  grid.innerHTML = '';
+  sets.forEach((s, idx) => {
+    const attempt = Store.get(currentSubjectKey, idx);
+    const card = document.createElement('button');
+    card.className = 'set-card';
+    const count = s.end - s.start;
+    let badge = '';
+    if (attempt && attempt.mode === currentMode){
+      if (attempt.status === 'completed') badge = '<div class="set-badge done">Done</div>';
+      else if (attempt.status === 'in-progress') badge = '<div class="set-badge progress">Resume</div>';
+    }
+    card.innerHTML = `${badge}<div class="sname">Set ${idx+1}</div><div class="scount">${count} Qs · 15 min</div>`;
+    card.onclick = () => goToTest(currentSubjectKey, idx, currentMode);
+    grid.appendChild(card);
+  });
+}
+
+function goToTest(key, setIdx, mode){
+  window.location.href = `test.html?subject=${encodeURIComponent(key)}&set=${setIdx}&mode=${mode}`;
+}
+
+document.getElementById('modal-close').onclick = () => document.getElementById('set-modal').classList.remove('show');
+document.getElementById('set-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'set-modal') document.getElementById('set-modal').classList.remove('show');
+});
+
+document.getElementById('search-box').addEventListener('input', (e) => {
+  const activeTag = document.querySelector('.filter-chip.active');
+  buildGrid(e.target.value, activeTag ? activeTag.textContent : 'All');
+});
+
+document.getElementById('reset-progress-link').addEventListener('click', (e) => {
+  e.preventDefault();
+  if (confirm('This will clear all saved attempts and progress on this device. Continue?')){
+    localStorage.removeItem('solvers_attempts_v1');
+    buildGrid('', 'All');
+  }
+});
+
+document.getElementById('stat-subjects').textContent = SUBJECT_ORDER.length;
+buildTagFilters();
+buildGrid('', 'All');
+</script>
+</body>
+</html>
